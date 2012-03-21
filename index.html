@@ -1,0 +1,74 @@
+<html>
+
+	<head>
+		
+		<script src="src/jsgf.js">
+		</script>
+	
+		<style>
+			body{
+				font-family:"Arial";
+			}
+			.content{
+				background-color:white;
+				border-radius:10px;
+				width:800px;
+				margin:0 auto;
+			}
+			.content h1{
+				text-align:center;
+			}
+		</style>
+	</head>
+
+	<body style="background-color:#68868F;">
+		<script>
+
+			function start(){
+				var particles = []
+				var time = 0.0;
+
+				Game.prototype.load = function(){
+					for(var i = 0; i < 200; i++){
+						particles.push({x:Math.random() * 800, y:Math.random() * 600});
+					}
+				}
+
+				Game.prototype.update = function(dt){
+						time += dt * 0.01;
+					for(var i = 0; i < particles.length; i++){
+						particles[i].x += Math.cos(time) * 20;
+						particles[i].y += Math.sin(time) * 20;
+					}
+				}
+				
+				Game.prototype.draw = function(){
+					this.ctx.fillStyle = '#ccc';
+
+					for(var i = 0; i < particles.length; i++){
+						this.ctx.fillRect(particles[i].x, particles[i].y, 4, 4);
+					}
+				}
+
+				var game = new Game();			
+				game.start();
+			}
+
+			window.onload = start;
+		</script>
+
+
+		<div class="content">
+			<h1>JSGF - Demo</h1>
+		</div>
+
+		<canvas id="jsgf" width="800" height="600" 
+			style="
+			  display:block;
+			  margin:30px auto 0;
+			  border:1px dashed #ccc;
+			  background:#000;
+			  cursor:none;">
+		</canvas>
+	</body>
+</html>
