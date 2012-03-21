@@ -1,0 +1,8 @@
+/**
+* 
+*/
+function Graphics(){
+
+	function draw(){		
+	}
+}
