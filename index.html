@@ -25,29 +25,63 @@
 		<script>
 
 			function start(){
-				var particles = []
-				var time = 0.0;
+				var e;
+				var interval = 10;
+				var current = 0;
+				var row = 0;
+				var col = 0;
+				var height = 22;
+				var width = 2;
+				var speed = 0.8;
 
 				Game.prototype.load = function(){
-					for(var i = 0; i < 200; i++){
-						particles.push({x:Math.random() * 800, y:Math.random() * 600});
-					}
+					e = new Entity("character.png");
+					e.y = 400;
+					e.source.width = (1024 / 8) + width;
+					e.source.height = (1024 / 8) + height;
 				}
 
 				Game.prototype.update = function(dt){
-						time += dt * 0.01;
-					for(var i = 0; i < particles.length; i++){
-						particles[i].x += Math.cos(time) * 20;
-						particles[i].y += Math.sin(time) * 20;
+					var animate = false;
+					if(game.input.keyDown('39')){						
+						e.x += dt * speed;
+						if(e.x > 800){
+							e.x = -100;
+						}
+						animate = true;
+						e.flipped = false;
+					}else if(game.input.keyDown('37')){				
+						e.x -= dt * speed;
+						if(e.x < -100){
+							e.x = 800;
+						}
+						animate = true;
+						e.flipped = true;
+					}else{
+						current = 0;
+					}
+
+					if(animate){
+						current += dt;
+						if(current > interval){
+							current = 0;
+							col++;
+							if(col > 6 || (row == 3 && col == 6)){
+								row++;
+								col = 0;
+							}
+							if(row > 3){
+								row = 0;
+								col = 0;
+							}
+							e.source.x = ((1024 / 8) + width) * col;
+							e.source.y = ((1024 / 8) + height) * row;
+						}
 					}
 				}
 				
 				Game.prototype.draw = function(){
-					this.ctx.fillStyle = '#ccc';
-
-					for(var i = 0; i < particles.length; i++){
-						this.ctx.fillRect(particles[i].x, particles[i].y, 4, 4);
-					}
+					e.draw(this.ctx);
 				}
 
 				var game = new Game();			
