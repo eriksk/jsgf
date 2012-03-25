@@ -4,7 +4,16 @@
 		
 		<script src="src/jsgf.js">
 		</script>
-	
+		<script src="samplegame.js">
+		</script>
+		<script>
+			function start(){
+				var game = new Game();			
+				game.start();
+			}
+			window.onload = start;
+		</script>
+
 		<style>
 			body{
 				font-family:"Arial";
@@ -22,81 +31,11 @@
 	</head>
 
 	<body style="background-color:#68868F;">
-		<script>
-
-			function start(){
-				var e;
-				var interval = 10;
-				var current = 0;
-				var row = 0;
-				var col = 0;
-				var height = 22;
-				var width = 2;
-				var speed = 0.8;
-
-				Game.prototype.load = function(){
-					e = new Entity("character.png");
-					e.y = 400;
-					e.source.width = (1024 / 8) + width;
-					e.source.height = (1024 / 8) + height;
-				}
-
-				Game.prototype.update = function(dt){
-					var animate = false;
-					if(game.input.keyDown('39')){						
-						e.x += dt * speed;
-						if(e.x > 800){
-							e.x = -100;
-						}
-						animate = true;
-						e.flipped = false;
-					}else if(game.input.keyDown('37')){				
-						e.x -= dt * speed;
-						if(e.x < -100){
-							e.x = 800;
-						}
-						animate = true;
-						e.flipped = true;
-					}else{
-						current = 0;
-					}
-
-					if(animate){
-						current += dt;
-						if(current > interval){
-							current = 0;
-							col++;
-							if(col > 6 || (row == 3 && col == 6)){
-								row++;
-								col = 0;
-							}
-							if(row > 3){
-								row = 0;
-								col = 0;
-							}
-							e.source.x = ((1024 / 8) + width) * col;
-							e.source.y = ((1024 / 8) + height) * row;
-						}
-					}
-				}
-				
-				Game.prototype.draw = function(){
-					e.draw(this.ctx);
-				}
-
-				var game = new Game();			
-				game.start();
-			}
-
-			window.onload = start;
-		</script>
-
-
 		<div class="content">
 			<h1>JSGF - Demo</h1>
 		</div>
 
-		<canvas id="jsgf" width="800" height="600" 
+		<canvas id="jsgf" width="512" height="512" 
 			style="
 			  display:block;
 			  margin:30px auto 0;

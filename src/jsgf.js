@@ -5,10 +5,13 @@
 function Game(){
 	this.width = 800;
 	this.height = 600;
-	this.interval = 60;
+	this.interval = 16.0;
 	this.canvasId = "jsgf";
 	this.ctx = document.getElementById(this.canvasId).getContext("2d");
 	this.input = new Input();
+	this.audio = new AudioManager();
+	// store reference to this game
+	this.game = this;
 }
 Game.prototype = {
 	start: function(){
@@ -37,50 +40,14 @@ Game.prototype = {
 };
 
 /*********************************************
-* Graphics
+* Image load helper
 * ********************************************
 */
-function Graphics(){
-}
-Graphics.prototype = { 
-	draw: function(image){		
-	}
-}
-
-/*********************************************
-* Texture
-* ********************************************
-*/
-function Texture(path){
-}
-Texture.prototype = {
-	width:0,
-	height:0
-}
-
-/*********************************************
-* Entity
-* ********************************************
-*/
-function Entity(texture){
-	this.img = new Image();
-	this.img.onload = function(){};
-	this.img.src = texture;
-
-	this.x = 0;
-	this.y = 0;
-	this.rotation = 0.0;
-	this.source = {x:0, y:0, width:this.img.width, height:this.img.height};
-	this.flipped = false;
-}
-Entity.prototype = {
-	draw: function(ctx){
-		ctx.drawImage(this.img, 
-			this.source.x, this.source.y, 
-			this.source.width, this.source.height,
-			this.x, this.y, 
-			this.source.width, this.source.height);
-	}
+function loadImage(texturePath){
+	var img = new Image();
+	img.onload = function(){};
+	img.src = texturePath;
+	return img;
 }
 
 /*********************************************
@@ -102,5 +69,175 @@ Input.prototype = {
 	},
 	keyDown: function(code){
 		return this.keys[code];
+	}
+}
+
+
+/*********************************************
+* Entity
+* ********************************************
+*/
+function Entity(texture){
+	this.img = loadImage(texture);
+	this.x = 0;
+	this.y = 0;
+	this.rotation = 0.0;
+	this.source = new Rectangle(0, 0, this.img.width, this.img.height);
+	this.flipped = false;
+	this.animations = {};
+	this.currentAnimation = "";
+}
+Entity.prototype = {
+	setAnim: function(name){
+		if(name != this.currentAnimation){
+			this.currentAnimation = name;
+			// reset
+			this.animations[this.currentAnimation].reset();
+		}
+	},
+	update: function(dt){
+		if(this.currentAnimation != ""){
+			this.animations[this.currentAnimation].update(dt);
+			this.source = this.animations[this.currentAnimation].source;
+		}
+	},	
+	draw: function(ctx){
+		ctx.drawImage(this.img, 
+			this.source.x, this.source.y, 
+			this.source.width, this.source.height,
+			this.x, this.y, 
+			this.source.width, this.source.height);
+	}
+}
+
+/*********************************************
+* Animation
+* ********************************************
+*/
+function Animation(frames, width, height, textureWidth, textureHeight, interval){
+	this.frames = frames;
+	this.width = width;
+	this.height = height;
+	this.source = new Rectangle(0, 0, width, height);
+	this.currentFrame = 0;
+	this.current = 0.0;
+	this.interval = interval;
+	this.textureWidth = textureWidth;
+	this.textureHeight = textureHeight;
+}
+Animation.prototype = {
+	reset: function(){
+		this.current = 0.0;
+		this.currentFrame = 0;
+	},
+	update : function(dt){
+		this.current += dt;
+		if(this.current > this.interval){
+			this.current = 0;
+			this.currentFrame++;
+			if(this.currentFrame >= this.frames){
+				this.currentFrame = 0;
+			}
+
+			this.source.x = (this.currentFrame % this.textureWidth) * this.width;
+			this.source.y = (this.currentFrame / this.textureWidth) * this.height; 
+		}	
+	}
+}
+
+/*********************************************
+* Rectangle
+* ********************************************
+*/
+function Rectangle(){
+	this.x = 0;
+	this.y = 0;
+	this.width = 0;
+	this.height = 0;
+}
+function Rectangle(x, y, width, height){
+	this.x = x;
+	this.y = y;
+	this.width = width;
+	this.height = height;
+}
+Rectangle.prototype = {
+	intersects: function(other){
+		//TODO:
+	}
+}
+
+/*********************************************
+* Rectangle
+* ********************************************
+*/
+function TileMap(texture, width, height){
+	this.img = loadImage(texture);
+	this.source = new Rectangle(0, 0, width, height);
+	this.textureWidth = 256;
+	this.textureHeight = this.img.clientHeight;
+	this.width = width;
+	this.height = height;
+	this.grid = [];
+	for(var i = 0; i < width; i++){
+		this.grid[i] = [];
+		for(var j = 0; j < height; j++){
+			this.grid[i][j] = Math.floor(Math.random() * 2);
+		}
+	}
+	console.log(this.textureWidth);
+	//console.log(this.grid);
+}
+
+
+/*********************************************
+* TileMap
+* ********************************************
+*/
+TileMap.prototype = {
+	update: function(){
+
+	},
+	draw: function(ctx){
+		var cell = 0;
+		for(var i = 0; i < this.width; i++){
+			for(var j = 0; j < this.height; j++){
+				cell = this.grid[i][j];
+
+				this.source.x = (cell % this.textureWidth) * this.width;
+				this.source.y = (cell / this.textureWidth) * this.height; 
+				ctx.drawImage(
+					this.img, 
+					this.source.x, this.source.y,
+					this.source.width, this.source.height,
+					i * this.width, j * this.height,
+					this.source.width, this.source.height);
+				//console.log(this.source);
+			}
+		}
+	}
+}
+
+/*********************************************
+* AudioManager
+* ********************************************
+*/
+function AudioManager(){
+	this.sounds = {};
+}
+AudioManager.prototype = {
+	load: function(soundPath){
+		var name = soundPath.split('/');
+		name = name[name.length - 1].split('.')[0];
+		this.sounds[name] = new Audio(soundPath);
+		this.sounds[name].pause();
+	},
+	play: function(name){
+		try{
+			this.sounds[name].currentTime = 0;
+		}catch(exception){
+
+		}
+		this.sounds[name].play();
 	}
 }
