@@ -40,6 +40,26 @@ Game.prototype = {
 };
 
 /*********************************************
+* Vector2
+* ********************************************
+*/
+function Vector2(){
+	this.x = 0.0;
+	this.y = 0.0;
+}
+
+/*********************************************
+* Vector3
+* ********************************************
+*/
+function Vector3(){
+	this.x = 0.0;
+	this.y = 0.0;
+	this.y = 0.0;
+}
+
+
+/*********************************************
 * Image load helper
 * ********************************************
 */
@@ -102,11 +122,23 @@ Entity.prototype = {
 		}
 	},	
 	draw: function(ctx){
-		ctx.drawImage(this.img, 
-			this.source.x, this.source.y, 
-			this.source.width, this.source.height,
-			this.x, this.y, 
-			this.source.width, this.source.height);
+		if(this.flipped){
+			ctx.save();
+			ctx.scale(-1, 1);
+			ctx.drawImage(this.img, 
+				this.source.x, this.source.y, 
+				this.source.width, this.source.height,
+				(-this.x) - this.source.width, this.y, 
+				this.source.width, this.source.height);
+			ctx.restore();
+		}
+		else{
+			ctx.drawImage(this.img, 
+				this.source.x, this.source.y, 
+				this.source.width, this.source.height,
+				this.x, this.y, 
+				this.source.width, this.source.height);	
+		}
 	}
 }
 
@@ -185,8 +217,6 @@ function TileMap(texture, width, height){
 			this.grid[i][j] = Math.floor(Math.random() * 2);
 		}
 	}
-	console.log(this.textureWidth);
-	//console.log(this.grid);
 }
 
 
@@ -212,7 +242,6 @@ TileMap.prototype = {
 					this.source.width, this.source.height,
 					i * this.width, j * this.height,
 					this.source.width, this.source.height);
-				//console.log(this.source);
 			}
 		}
 	}
@@ -233,11 +262,32 @@ AudioManager.prototype = {
 		this.sounds[name].pause();
 	},
 	play: function(name){
+		console.log("Playing sound " + name);	
 		try{
 			this.sounds[name].currentTime = 0;
 		}catch(exception){
-
+			console.log(exception);
 		}
 		this.sounds[name].play();
+	},
+	playSong: function(name){	
+		console.log("Started playing song " + name);	
+		try{
+			this.sounds[name].addEventListener('ended', function() {
+		    this.currentTime = 0;
+		    this.play();
+			}, false);
+		}catch(exception){
+			console.log(exception);
+		}
+		this.sounds[name].play();
+	},
+	stopSong: function(name){
+		console.log("Ended playing song " + name);	
+		try{
+			this.sounds[name].pause();
+		}catch(exception){
+			console.log(exception);
+		}
 	}
 }

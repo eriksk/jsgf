@@ -5,27 +5,32 @@ Character.prototype = {
 
 }
 
-var e;
+var characters = [];
 var height = 22;
 var width = 2;
 var speed = 0.08;
 var map;
 
 Game.prototype.load = function(){
-	e = new Entity("character.png");
-	e.y = 400;
-	e.animations['idle'] = new Animation(2, 32, 32, 96, 32, 500);
-	e.animations['walk'] = new Animation(3, 32, 32, 96, 32, 100);
-	e.setAnim('idle');
+	for(var i = 0; i < 100; i++){
+		var e = new Entity("character.png");
+		e.x = Math.random() * 500;
+		e.y = Math.random() * 500;
+		e.animations['idle'] = new Animation(2, 32, 32, 96, 32, 500);
+		e.animations['walk'] = new Animation(3, 32, 32, 96, 32, 100);
+		e.setAnim('idle');
+		characters.push(e);
+	}
 
 	map = new TileMap("tiles.png", 32, 32);
-	//this.game.audio.load('explosion.wav');
-	//this.game.audio.play('explosion');
+	this.game.audio.load('song.wav');
+	this.game.audio.playSong('song');
 }
 
 Game.prototype.update = function(dt){
 	var game = this.game;
 
+/*
 	if(game.input.keyDown('39')){						
 		e.x += dt * speed;
 		e.flipped = false;
@@ -37,12 +42,17 @@ Game.prototype.update = function(dt){
 	}else{
 		e.setAnim('idle');
 	}
+*/
+	for(var i = 0; i < characters.length; i++){
 
-	e.update(dt);
+		characters[i].update(dt);
+	}
 	map.update(dt);
 }
 
 Game.prototype.draw = function(){
-	map.draw(this.ctx);
-	e.draw(this.ctx);
+	map.draw(this.ctx);	
+	for(var i = 0; i < characters.length; i++){
+		characters[i].draw(this.ctx);
+	}
 }
